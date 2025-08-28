@@ -1,0 +1,114 @@
+
+import React, { useState, useCallback } from 'react';
+import { generateStudioPhoto } from './services/geminiService';
+import { StylePreset } from './types';
+import { STYLE_PRESETS } from './constants';
+import ImageUploader from './components/ImageUploader';
+import StyleSelector from './components/StyleSelector';
+import OutputDisplay from './components/OutputDisplay';
+import SparklesIcon from './components/icons/SparklesIcon';
+
+const App: React.FC = () => {
+  const [originalImage, setOriginalImage] = useState<{ file: File; base64: string } | null>(null);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState<StylePreset>(STYLE_PRESETS[0]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleImageUpload = (file: File, base64: string) => {
+    setOriginalImage({ file, base64 });
+    setGeneratedImage(null);
+    setError(null);
+  };
+
+  const handleGeneration = useCallback(async () => {
+    if (!originalImage) {
+      setError('Please upload an image first.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setGeneratedImage(null);
+
+    try {
+      const mimeType = originalImage.file.type;
+      const result = await generateStudioPhoto(originalImage.base64, mimeType, selectedStyle);
+      setGeneratedImage(result);
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred during image generation.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [originalImage, selectedStyle]);
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white font-sans flex flex-col items-center p-4 sm:p-6 md:p-8">
+      <header className="w-full max-w-6xl text-center mb-8">
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-600">
+          Studio Photo AI
+        </h1>
+        <p className="mt-2 text-lg text-gray-400">
+          Transform your casual photos into professional studio portraits.
+        </p>
+      </header>
+
+      <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700 shadow-2xl flex flex-col gap-6">
+          <div>
+            <h2 className="text-2xl font-bold mb-1 text-gray-200">1. Upload Your Photo</h2>
+            <p className="text-gray-400 mb-4">Select a clear portrait photo for the best results.</p>
+            <ImageUploader onImageUpload={handleImageUpload} />
+          </div>
+
+          {originalImage && (
+            <>
+              <div>
+                <h2 className="text-2xl font-bold mb-1 text-gray-200">2. Choose a Style</h2>
+                <p className="text-gray-400 mb-4">Select a preset to define the final look.</p>
+                <StyleSelector
+                  presets={STYLE_PRESETS}
+                  selectedPreset={selectedStyle}
+                  onSelectPreset={setSelectedStyle}
+                />
+              </div>
+
+              <button
+                onClick={handleGeneration}
+                disabled={isLoading || !originalImage}
+                className="w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500"
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon />
+                    Generate Studio Photo
+                  </>
+                )}
+              </button>
+            </>
+          )}
+        </div>
+        
+        <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700 shadow-2xl flex items-center justify-center min-h-[400px] lg:min-h-0">
+          <OutputDisplay
+            originalImage={originalImage?.base64 ?? null}
+            generatedImage={generatedImage}
+            isLoading={isLoading}
+            error={error}
+          />
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default App;

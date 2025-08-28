@@ -1,0 +1,5 @@
+{
+  "name": "Studio Photo AI",
+  "description": "An AI-powered tool that transforms casual, everyday photos into high-quality, studio-style portraits using the Gemini API.",
+  "requestFramePermissions": []
+}
