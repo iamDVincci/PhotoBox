@@ -66,3 +66,58 @@ export const generateStudioPhoto = async (
     throw new Error("An unknown error occurred while communicating with the Gemini API.");
   }
 };
+
+
+export const editStudioPhoto = async (
+  base64ImageToEdit: string,
+  mimeTypeToEdit: string,
+  prompt: string,
+  referenceImage?: { base64: string; mimeType: string }
+): Promise<string> => {
+  try {
+    const parts: any[] = [
+      {
+        text: `You are an expert AI photo editor. Edit the following image based on my instructions. The key is to preserve the person's identity and facial features while making the requested changes.`,
+      },
+      {
+        inlineData: { data: base64ImageToEdit, mimeType: mimeTypeToEdit },
+      },
+    ];
+
+    if (referenceImage) {
+      parts.push({
+        text: 'Use this second image as a style and content reference for the edit:',
+      });
+      parts.push({
+        inlineData: {
+          data: referenceImage.base64,
+          mimeType: referenceImage.mimeType,
+        },
+      });
+    }
+
+    parts.push({ text: `My instruction is: "${prompt}"` });
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image-preview',
+      contents: { parts },
+      config: {
+        responseModalities: [Modality.IMAGE, Modality.TEXT],
+      },
+    });
+
+    for (const part of response.candidates[0].content.parts) {
+      if (part.inlineData) {
+        return part.inlineData.data;
+      }
+    }
+
+    throw new Error('No image was generated in the edit. The model may have refused the request.');
+  } catch (error) {
+    console.error("Error calling Gemini API for editing:", error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to edit image: ${error.message}`);
+    }
+    throw new Error("An unknown error occurred while communicating with the Gemini API for editing.");
+  }
+};

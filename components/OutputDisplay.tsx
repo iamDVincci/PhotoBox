@@ -2,15 +2,17 @@
 import React from 'react';
 import Loader from './Loader';
 import DownloadIcon from './icons/DownloadIcon';
+import PencilIcon from './icons/PencilIcon';
 
 interface OutputDisplayProps {
   originalImage: string | null;
   generatedImage: string | null;
   isLoading: boolean;
   error: string | null;
+  onEdit?: (base64Image: string) => void;
 }
 
-const OutputDisplay: React.FC<OutputDisplayProps> = ({ originalImage, generatedImage, isLoading, error }) => {
+const OutputDisplay: React.FC<OutputDisplayProps> = ({ originalImage, generatedImage, isLoading, error, onEdit }) => {
   const handleDownload = () => {
     if (generatedImage) {
       const link = document.createElement('a');
@@ -41,13 +43,24 @@ const OutputDisplay: React.FC<OutputDisplayProps> = ({ originalImage, generatedI
         <div className="w-full aspect-w-1 aspect-h-1 relative">
             <img src={`data:image/png;base64,${generatedImage}`} alt="Generated studio" className="object-contain w-full h-full rounded-lg shadow-2xl" />
         </div>
-        <button
-          onClick={handleDownload}
-          className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-300"
-        >
-          <DownloadIcon />
-          Download Image
-        </button>
+        <div className="mt-4 w-full flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            onClick={handleDownload}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-300"
+          >
+            <DownloadIcon />
+            Download
+          </button>
+          {onEdit && (
+            <button
+              onClick={() => onEdit(generatedImage)}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-300"
+            >
+              <PencilIcon />
+              Edit Photo
+            </button>
+          )}
+        </div>
       </div>
     );
   }
