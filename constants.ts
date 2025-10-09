@@ -1,5 +1,4 @@
-
-import { StylePreset } from './types';
+import { StylePreset, AspectRatio } from './types';
 
 export const STYLE_PRESETS: StylePreset[] = [
   {
@@ -52,4 +51,21 @@ export const STYLE_PRESETS: StylePreset[] = [
     name: 'Neon Noir',
     promptSuffix: 'Craft a modern, moody portrait illuminated by neon lights. The scene should be dark, with vibrant neon colors (like pink, blue, or purple) casting colored light and reflections onto the subject. The background should be a dark, minimalist urban-inspired setting.'
   }
+];
+
+// Updated to include all 10 officially supported aspect ratios
+export const ASPECT_RATIOS: AspectRatio[] = [
+  // Square
+  { id: '1:1', name: 'Square (1:1)', value: '1:1' },
+  // Portrait
+  { id: '3:4', name: 'Portrait (3:4)', value: '3:4' },
+  { id: '9:16', name: 'Story (9:16)', value: '9:16' },
+  { id: '2:3', name: 'Portrait (2:3)', value: '2:3' },
+  { id: '4:5', name: 'Social (4:5)', value: '4:5' },
+  // Landscape
+  { id: '4:3', name: 'Landscape (4:3)', value: '4:3' },
+  { id: '16:9', name: 'Widescreen (16:9)', value: '16:9' },
+  { id: '3:2', name: 'Landscape (3:2)', value: '3:2' },
+  { id: '21:9', name: 'Cinematic (21:9)', value: '21:9' },
+  { id: '5:4', name: 'Landscape (5:4)', value: '5:4' },
 ];

@@ -4,3 +4,9 @@ export interface StylePreset {
   name: string;
   promptSuffix: string;
 }
+
+export interface AspectRatio {
+  id: string;
+  name: string;
+  value: string;
+}

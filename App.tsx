@@ -1,18 +1,20 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { generateStudioPhoto } from './services/geminiService';
-import { StylePreset } from './types';
-import { STYLE_PRESETS } from './constants';
+import { StylePreset, AspectRatio } from './types';
+import { STYLE_PRESETS, ASPECT_RATIOS } from './constants';
 import ImageUploader from './components/ImageUploader';
 import StyleSelector from './components/StyleSelector';
 import OutputDisplay from './components/OutputDisplay';
 import SparklesIcon from './components/icons/SparklesIcon';
 import Editor from './components/Editor';
+import AspectRatioSelector from './components/AspectRatioSelector';
 
 const App: React.FC = () => {
   const [originalImage, setOriginalImage] = useState<{ file: File; base64: string } | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<StylePreset>(STYLE_PRESETS[0]);
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState<AspectRatio>(ASPECT_RATIOS[0]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +41,12 @@ const App: React.FC = () => {
 
     try {
       const mimeType = originalImage.file.type;
-      const result = await generateStudioPhoto(originalImage.base64, mimeType, selectedStyle);
+      const result = await generateStudioPhoto(
+        originalImage.base64,
+        mimeType,
+        selectedStyle,
+        selectedAspectRatio.value
+      );
       setGeneratedImage(result);
     } catch (err) {
       console.error(err);
@@ -47,7 +54,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [originalImage, selectedStyle]);
+  }, [originalImage, selectedStyle, selectedAspectRatio]);
 
   const handleForwardToEditor = useCallback((base64Image: string) => {
     setImageToEdit(base64Image);
@@ -85,6 +92,16 @@ const App: React.FC = () => {
                     presets={STYLE_PRESETS}
                     selectedPreset={selectedStyle}
                     onSelectPreset={setSelectedStyle}
+                  />
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-bold mb-1 text-gray-200">3. Choose Aspect Ratio</h2>
+                  <p className="text-gray-400 mb-4">Select the final dimensions for your photo.</p>
+                  <AspectRatioSelector
+                    ratios={ASPECT_RATIOS}
+                    selectedRatio={selectedAspectRatio}
+                    onSelectRatio={setSelectedAspectRatio}
                   />
                 </div>
 

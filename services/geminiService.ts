@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Modality } from "@google/genai";
 import type { StylePreset } from '../types';
 
@@ -18,19 +17,19 @@ const BASE_PROMPT = `Act as an AI image enhancement specialist. Your goal is to 
 5. Remove the existing background and replace it with a clean, professional studio backdrop as specified.
 6. Retouch skin naturally: smooth texture, enhance eyes, remove blemishes, and adjust contrast without over-editing.
 7. Enhance the quality and texture of clothing and accessories.
-8. Ensure the final output is a high-resolution, portrait-oriented, studio-grade image.
 Constraint: Preserve the person’s identity and proportions. Avoid artificial or unrealistic results. The final aesthetic should be comparable to high-end fashion or editorial photography.`;
 
 export const generateStudioPhoto = async (
   base64ImageData: string,
   mimeType: string,
-  style: StylePreset
+  style: StylePreset,
+  aspectRatio: string
 ): Promise<string> => {
   try {
     const fullPrompt = `${BASE_PROMPT}\n\nStyle-specific instruction: ${style.promptSuffix}`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image-preview',
+      model: 'gemini-2.5-flash-image',
       contents: {
         parts: [
           {
@@ -46,6 +45,9 @@ export const generateStudioPhoto = async (
       },
       config: {
         responseModalities: [Modality.IMAGE, Modality.TEXT],
+        imageConfig: {
+          aspectRatio: aspectRatio,
+        },
       },
     });
     
@@ -99,7 +101,7 @@ export const editStudioPhoto = async (
     parts.push({ text: `My instruction is: "${prompt}"` });
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image-preview',
+      model: 'gemini-2.5-flash-image',
       contents: { parts },
       config: {
         responseModalities: [Modality.IMAGE, Modality.TEXT],
