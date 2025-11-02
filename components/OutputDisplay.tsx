@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Loader from './Loader';
 import DownloadIcon from './icons/DownloadIcon';
@@ -31,7 +30,7 @@ const OutputDisplay: React.FC<OutputDisplayProps> = ({ originalImage, generatedI
   if (error) {
     return (
       <div className="text-center text-red-400">
-        <h3 className="text-xl font-semibold mb-2">Generation Failed</h3>
+        <h3 className="text-xl font-semibold mb-2">Operation Failed</h3>
         <p className="text-sm">{error}</p>
       </div>
     );

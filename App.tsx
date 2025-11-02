@@ -1,6 +1,5 @@
-
 import React, { useState, useCallback, useRef } from 'react';
-import { generateStudioPhoto } from './services/geminiService';
+import { generateStudioPhoto, cleanUpPhoto } from './services/geminiService';
 import { StylePreset, AspectRatio } from './types';
 import { STYLE_PRESETS, ASPECT_RATIOS } from './constants';
 import ImageUploader from './components/ImageUploader';
@@ -56,6 +55,29 @@ const App: React.FC = () => {
     }
   }, [originalImage, selectedStyle, selectedAspectRatio]);
 
+  const handleCleanUp = useCallback(async () => {
+    if (!originalImage) {
+      setError('Please upload an image first.');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    setGeneratedImage(null);
+    setImageToEdit(null); // Close editor if open
+
+    try {
+      const mimeType = originalImage.file.type;
+      const result = await cleanUpPhoto(originalImage.base64, mimeType);
+      setGeneratedImage(result);
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred during image clean up.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [originalImage]);
+
   const handleForwardToEditor = useCallback((base64Image: string) => {
     setImageToEdit(base64Image);
     setTimeout(() => {
@@ -86,18 +108,19 @@ const App: React.FC = () => {
             {originalImage && (
               <>
                 <div>
-                  <h2 className="text-2xl font-bold mb-1 text-gray-200">2. Choose a Style</h2>
-                  <p className="text-gray-400 mb-4">Select a preset to define the final look.</p>
+                  <h2 className="text-2xl font-bold mb-1 text-gray-200">2. Choose an Action</h2>
+                  <p className="text-gray-400 mb-4">Select a style preset or clean up the original photo.</p>
                   <StyleSelector
                     presets={STYLE_PRESETS}
                     selectedPreset={selectedStyle}
                     onSelectPreset={setSelectedStyle}
+                    onCleanUp={handleCleanUp}
                   />
                 </div>
 
                 <div>
                   <h2 className="text-2xl font-bold mb-1 text-gray-200">3. Choose Aspect Ratio</h2>
-                  <p className="text-gray-400 mb-4">Select the final dimensions for your photo.</p>
+                  <p className="text-gray-400 mb-4">Select the final dimensions for your photo. (Only for style generation)</p>
                   <AspectRatioSelector
                     ratios={ASPECT_RATIOS}
                     selectedRatio={selectedAspectRatio}
@@ -116,12 +139,12 @@ const App: React.FC = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Generating...
+                      Processing...
                     </>
                   ) : (
                     <>
                       <SparklesIcon />
-                      Generate Studio Photo
+                      Generate With Style
                     </>
                   )}
                 </button>
